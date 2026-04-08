@@ -14,3 +14,9 @@ class TestConversion:
         html_node = text_node_to_html_node(node)
         assert html_node.tag == "b"
         assert html_node.value == "This is bold text"
+
+    def test_italic(self):
+        node = TextNode("This is italic text", TextType.ITALIC)
+        html_node = text_node_to_html_node(node)
+        assert html_node.tag == "i"
+        assert html_node.value == "This is italic text"
