@@ -1,6 +1,20 @@
+import re
+
 from htmlnode import HTMLNode
 from leafnode import LeafNode
 from textnode import TextNode, TextType
+
+
+def from_bold(input: str) -> str:
+    return re.sub(r"\*\*(.*?)\*\*", r"\1", input)
+
+
+def from_italic(input: str) -> str:
+    return re.sub(r"_(.*?)_", r"\1", input)
+
+
+def from_code(input: str) -> str:
+    return re.sub(r"`(.*?)`", r"\1", input)
 
 
 def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
@@ -8,10 +22,13 @@ def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
         case TextType.TEXT:
             return LeafNode(tag=None, value=text_node.text)
         case TextType.BOLD:
-            return LeafNode(tag="b", value=text_node.text)
+            text = from_bold(text_node.text)
+            return LeafNode(tag="b", value=text)
         case TextType.ITALIC:
-            return LeafNode(tag="i", value=text_node.text)
+            text = from_italic(text_node.text)
+            return LeafNode(tag="i", value=text)
         case TextType.CODE:
-            return LeafNode(tag="code", value=text_node.text)
+            text = from_code(text_node.text)
+            return LeafNode(tag="code", value=text)
         case _:
             raise ValueError("Unknown TextType.")
