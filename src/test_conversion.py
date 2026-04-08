@@ -1,5 +1,11 @@
 from textnode import TextNode, TextType
-from utils import split_nodes_delimiter, text_node_to_html_node
+from utils import (
+    extract_markdown_images,
+    extract_markdown_links,
+    split_nodes_delimiter,
+    split_nodes_image,
+    text_node_to_html_node,
+)
 
 
 class TestConversion:
@@ -71,3 +77,65 @@ class TestConversion:
             TextNode("bold", TextType.BOLD),
             TextNode(" text", TextType.TEXT),
         ]
+
+    def test_extract_markdown_image(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        assert [("image", "https://i.imgur.com/zjjcJKZ.png")] == matches
+
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with two images: ![image_one](image1.png) and ![image_two](image2.png)"
+        )
+        assert [("image_one", "image1.png"), ("image_two", "image2.png")] == matches
+
+    def test_extract_markdown_link(self):
+        matches = extract_markdown_links(
+            "This is text with an [link](https://boot.dev)"
+        )
+        assert [("link", "https://boot.dev")] == matches
+
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with two links: [link_one](https://boot.dev) and [link_two](https://google.com)"
+        )
+        assert [
+            ("link_one", "https://boot.dev"),
+            ("link_two", "https://google.com"),
+        ] == matches
+
+    def test_split_images(self):
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        assert [
+            TextNode("This is text with an ", TextType.TEXT),
+            TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+            TextNode(" and another ", TextType.TEXT),
+            TextNode("second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"),
+        ] == new_nodes
+
+    def test_split_images_beginning_end(self):
+        node = TextNode(
+            "![image](https://i.imgur.com/zjjcJKZ.png) is an image and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        assert [
+            TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+            TextNode(" is an image and another ", TextType.TEXT),
+            TextNode("second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"),
+        ] == new_nodes
+
+    def test_split_images_no_image(self):
+        node = TextNode(
+            "is an image and another",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        assert [
+            TextNode("is an image and another", TextType.TEXT),
+        ] == new_nodes
