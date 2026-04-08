@@ -8,7 +8,7 @@ class TestTextNode:
         assert node == node2
 
     def test_url_none(self):
-        node = TextNode("this is a test", TextType.IMAGE, url=None)
+        node = TextNode("this is a test", TextType.IMAGE)
         node2 = TextNode("this is a test", TextType.IMAGE, url=None)
         assert node == node2
 
