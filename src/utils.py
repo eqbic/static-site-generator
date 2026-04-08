@@ -1,5 +1,6 @@
 import re
 
+from blocktype import BlockType
 from htmlnode import HTMLNode
 from leafnode import LeafNode
 from textnode import TextNode, TextType
@@ -81,6 +82,16 @@ def split_nodes_delimiter(
     return result
 
 
+def text_to_text_nodes(text: str) -> list[TextNode]:
+    result = [TextNode(text, TextType.TEXT)]
+    result = split_nodes_delimiter(result, "**", TextType.BOLD)
+    result = split_nodes_delimiter(result, "_", TextType.ITALIC)
+    result = split_nodes_delimiter(result, "`", TextType.CODE)
+    result = split_nodes_image(result)
+    result = split_nodes_link(result)
+    return result
+
+
 def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
     match text_node.text_type:
         case TextType.TEXT:
@@ -101,3 +112,16 @@ def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
             )
         case _:
             raise ValueError("Unknown TextType.")
+
+
+def markdown_to_blocks(markdown: str) -> list[str]:
+    return [block.strip() for block in markdown.split("\n\n") if len(block) > 0]
+
+
+def markdown_to_html_node(markdown: str) -> HTMLNode:
+    # blocks = markdown_to_blocks(markdown)
+    # for block in blocks:
+    #     block_type = BlockType.from_block(block)
+    #     match block_type:
+    #         case BlockType.PARAGRAPH:
+    pass
