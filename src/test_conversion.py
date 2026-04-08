@@ -20,3 +20,9 @@ class TestConversion:
         html_node = text_node_to_html_node(node)
         assert html_node.tag == "i"
         assert html_node.value == "This is italic text"
+        
+    def test_code(self):
+        node = TextNode("This is hacker code", TextType.CODE)
+        html_node = text_node_to_html_node(node)
+        assert html_node.tag == "code"
+        assert html_node.value == "This is hacker code"
