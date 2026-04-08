@@ -13,8 +13,8 @@ class TestTextNode:
         assert node == node2
 
     def test_unequal_text(self):
-        node = TextNode("this is a", TextType.PLAIN)
-        node2 = TextNode("this is b", TextType.PLAIN)
+        node = TextNode("this is a", TextType.TEXT)
+        node2 = TextNode("this is b", TextType.TEXT)
         assert node != node2
 
     def test_unqual_type(self):
