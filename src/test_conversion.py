@@ -27,8 +27,17 @@ class TestConversion:
         assert html_node.tag == "code"
         assert html_node.value == "This is hacker code"
 
-    # def test_link(self):
-    #     node = TextNode("This is a [link](http://boot.dev)", TextType.LINK)
-    #     html_node = text_node_to_html_node(node)
-    #     assert html_node.tag == "a"
-    #     assert html_node.value == "This is hacker code"
+    def test_link(self):
+        node = TextNode("This is a [link](http://boot.dev)", TextType.LINK)
+        html_node = text_node_to_html_node(node)
+        assert html_node.tag == "a"
+        assert html_node.value == "link"
+        assert html_node.props["href"] == "http://boot.dev"
+
+    def test_image(self):
+        node = TextNode("This is a ![image of a bird](image.png)", TextType.IMAGE)
+        html_node = text_node_to_html_node(node)
+        assert html_node.tag == "img"
+        assert html_node.value == ""
+        assert html_node.props["src"] == "image.png"
+        assert html_node.props["alt"] == "image of a bird"
