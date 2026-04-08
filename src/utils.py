@@ -3,6 +3,7 @@ import re
 from blocktype import BlockType
 from htmlnode import HTMLNode
 from leafnode import LeafNode
+from parentnode import ParentNode
 from textnode import TextNode, TextType
 
 
@@ -24,6 +25,46 @@ def extract_markdown_links(text: str) -> list[tuple[str, str]]:
 
 def extract_markdown_images(text: str) -> list[tuple[str, str]]:
     return re.findall(r"!\[([^\]]*)\]\(([^)]+)\)", text)
+
+
+def extract_markdown_heading(header: str) -> tuple[int, str]:
+    match = re.match(r"^(#{1,6}) (.+)", header)
+    level = len(match.group(1))
+    text = match.group(2)
+    return (level, text)
+
+
+def extract_paragraph(block: str) -> str:
+    return " ".join(line.strip() for line in block.splitlines())
+
+
+def extract_quote(block: str) -> str:
+    match = re.fullmatch(r"(> ?)(.+)", block, re.MULTILINE)
+    return match.group(2)
+
+
+def extract_unordered_list(block: str) -> list[str]:
+    lines = block.splitlines()
+    items = []
+    for line in lines:
+        match = re.match("(- )(.+)", line)
+        if match:
+            items.append(match.group(2))
+    return items
+
+
+def extract_ordered_list(block: str) -> list[str]:
+    lines = block.splitlines()
+    items = []
+    for line in lines:
+        match = re.match(r"(\d. )(.+)")
+        if match:
+            items.append(match.group(2))
+    return items
+
+
+def extract_code(block: str) -> str:
+    return "\n".join(line.strip() for line in block.splitlines()[1:-1]) + "\n"
 
 
 def split_nodes(
@@ -119,9 +160,58 @@ def markdown_to_blocks(markdown: str) -> list[str]:
 
 
 def markdown_to_html_node(markdown: str) -> HTMLNode:
-    # blocks = markdown_to_blocks(markdown)
-    # for block in blocks:
-    #     block_type = BlockType.from_block(block)
-    #     match block_type:
-    #         case BlockType.PARAGRAPH:
-    pass
+    blocks = markdown_to_blocks(markdown)
+    block_elements = []
+    for block in blocks:
+        block_type = BlockType.from_block(block)
+        match block_type:
+            case BlockType.PARAGRAPH:
+                text = extract_paragraph(block)
+                text_nodes = text_to_text_nodes(text)
+                leafs = [text_node_to_html_node(node) for node in text_nodes]
+                p_node = ParentNode("p", leafs)
+                block_elements.append(p_node)
+            case BlockType.HEADING:
+                level, text = extract_markdown_heading(block)
+                text_nodes = text_to_text_nodes(text)
+                leafs = [text_node_to_html_node(node) for node in text_nodes]
+                h_node = ParentNode(f"h{level}", leafs)
+                block_elements.append(h_node)
+            case BlockType.CODE:
+                code = extract_code(block)
+                print(code)
+                text_nodes = [TextNode(code, TextType.TEXT)]
+                leafs = [text_node_to_html_node(node) for node in text_nodes]
+                code_node = ParentNode("code", leafs)
+                block_elements.append(ParentNode("pre", [code_node]))
+            case BlockType.QUOTE:
+                quote_text = extract_quote(block)
+                text_nodes = text_to_text_nodes(quote_text)
+                leafs = [text_node_to_html_node(node) for node in text_nodes]
+                quote_node = ParentNode("blockquote", leafs)
+                block_elements.append(quote_node)
+            case BlockType.UNORDERED_LIST:
+                entries = extract_unordered_list(block)
+                li_elements = []
+                for entry in entries:
+                    text_nodes = text_to_text_nodes(entry)
+                    leafs = [text_node_to_html_node(node) for node in text_nodes]
+                    li_node = ParentNode("li", leafs)
+                    li_elements.append(li_node)
+                ol_parent = ParentNode("ul", li_elements)
+                block_elements.append(ol_parent)
+            case BlockType.ORDERED_LIST:
+                entries = extract_ordered_list(block)
+                li_elements = []
+                for entry in entries:
+                    text_nodes = text_to_text_nodes(entry)
+                    leafs = [text_node_to_html_node(node) for node in text_nodes]
+                    li_node = ParentNode("li", leafs)
+                    li_elements.append(li_node)
+                ol_parent = ParentNode("ol", li_elements)
+                block_elements.append(ol_parent)
+            case _:
+                raise ValueError("Unknown BlockType")
+
+    parent = ParentNode("div", children=block_elements)
+    return parent
