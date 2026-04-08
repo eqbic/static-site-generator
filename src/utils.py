@@ -23,44 +23,45 @@ def extract_markdown_links(text: str) -> list[tuple[str, str]]:
 
 def extract_markdown_images(text: str) -> list[tuple[str, str]]:
     return re.findall(r"!\[([^\]]*)\]\(([^)]+)\)", text)
-    
 
-def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+
+def split_nodes(
+    old_nodes: list[TextNode], extract_fn, template, type: TextType
+) -> list[TextNode]:
     result = []
     for old_node in old_nodes:
         text = old_node.text
-        links = extract_markdown_links(text)
-        if len(links) == 0:
+        extractions = extract_fn(text)
+        if len(extractions) == 0:
             result.append(old_node)
             continue
-        for link in links:
-            sections = text.split(f"[{link[0]}]({link[1]})", 1)
+        for extraction in extractions:
+            sections = text.split(template(extraction[0], extraction[1]), 1)
             if len(sections[0]) > 0:
                 result.append(TextNode(sections[0], TextType.TEXT))
-            result.append(TextNode(link[0], TextType.LINK, link[1]))
+            result.append(TextNode(extraction[0], type, extraction[1]))
             text = sections[1]
         if len(text) > 0:
             result.append(TextNode(text, TextType.TEXT))
     return result
+
+
+def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+    return split_nodes(
+        old_nodes,
+        extract_markdown_links,
+        lambda text, url: f"[{text}]({url})",
+        TextType.LINK,
+    )
 
 
 def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
-    result = []
-    for old_node in old_nodes:
-        text = old_node.text
-        images = extract_markdown_images(text)
-        if len(images) == 0:
-            result.append(old_node)
-            continue
-        for image in images:
-            sections = text.split(f"![{image[0]}]({image[1]})", 1)
-            if len(sections[0]) > 0:
-                result.append(TextNode(sections[0], TextType.TEXT))
-            result.append(TextNode(image[0], TextType.IMAGE, image[1]))
-            text = sections[1]
-        if len(text) > 0:
-            result.append(TextNode(text, TextType.TEXT))
-    return result
+    return split_nodes(
+        old_nodes,
+        extract_markdown_images,
+        lambda alt, src: f"![{alt}]({src})",
+        TextType.IMAGE,
+    )
 
 
 def split_nodes_delimiter(

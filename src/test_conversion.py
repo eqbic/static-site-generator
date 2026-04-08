@@ -4,6 +4,7 @@ from utils import (
     extract_markdown_links,
     split_nodes_delimiter,
     split_nodes_image,
+    split_nodes_link,
     text_node_to_html_node,
 )
 
@@ -136,6 +137,41 @@ class TestConversion:
             TextType.TEXT,
         )
         new_nodes = split_nodes_image([node])
+        assert [
+            TextNode("is an image and another", TextType.TEXT),
+        ] == new_nodes
+
+    def test_split_links(self):
+        node = TextNode(
+            "This is text with an [link](https://boot.dev) and another [second link](https://google.com)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])
+        assert [
+            TextNode("This is text with an ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode(" and another ", TextType.TEXT),
+            TextNode("second link", TextType.LINK, "https://google.com"),
+        ] == new_nodes
+
+    def test_split_links_beginning_end(self):
+        node = TextNode(
+            "[link](https://boot.dev) is an link and another [second link](https://google.com)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])
+        assert [
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode(" is an link and another ", TextType.TEXT),
+            TextNode("second link", TextType.LINK, "https://google.com"),
+        ] == new_nodes
+
+    def test_split_links_no_link(self):
+        node = TextNode(
+            "is an image and another",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])
         assert [
             TextNode("is an image and another", TextType.TEXT),
         ] == new_nodes
