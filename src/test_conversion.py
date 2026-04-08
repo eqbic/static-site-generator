@@ -1,5 +1,5 @@
 from textnode import TextNode, TextType
-from utils import text_node_to_html_node
+from utils import split_nodes_delimiter, text_node_to_html_node
 
 
 class TestConversion:
@@ -43,3 +43,31 @@ class TestConversion:
         assert html_node.value == ""
         assert html_node.props["src"] == "image.png"
         assert html_node.props["alt"] == "image of a bird"
+
+    def test_split_nodes_delimiter_code(self):
+        node = TextNode("This is text with a `code block` word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        assert new_nodes == [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" word", TextType.TEXT),
+        ]
+
+    def test_split_nodes_delimiter_multiple_code_beginning(self):
+        node = TextNode("`This` is text with a `code block` word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        assert new_nodes == [
+            TextNode("This", TextType.CODE),
+            TextNode(" is text with a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" word", TextType.TEXT),
+        ]
+
+    def test_split_nodes_bold(self):
+        node = TextNode("This is a **bold** text", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        assert new_nodes == [
+            TextNode("This is a ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" text", TextType.TEXT),
+        ]

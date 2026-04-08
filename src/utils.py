@@ -25,6 +25,22 @@ def from_image(input: str) -> tuple[str, str]:
     return re.findall(r"!\[([^\]]*)\]\(([^)]+)\)", input)[0]
 
 
+def split_nodes_delimiter(
+    old_nodes: list[TextNode], delimiter: str, text_type: TextType
+) -> list[TextNode]:
+    result = []
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            result.append(old_node)
+        parts = [
+            TextNode(text, text_type if i % 2 == 1 else TextType.TEXT)
+            for i, text in enumerate(old_node.text.split(delimiter))
+            if text != ""
+        ]
+        result.extend(parts)
+    return result
+
+
 def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
     match text_node.text_type:
         case TextType.TEXT:
