@@ -30,19 +30,18 @@ def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
         case TextType.TEXT:
             return LeafNode(tag=None, value=text_node.text)
         case TextType.BOLD:
-            text = from_bold(text_node.text)
-            return LeafNode(tag="b", value=text)
+            return LeafNode(tag="b", value=text_node.text)
         case TextType.ITALIC:
-            text = from_italic(text_node.text)
-            return LeafNode(tag="i", value=text)
+            return LeafNode(tag="i", value=text_node.text)
         case TextType.CODE:
-            text = from_code(text_node.text)
-            return LeafNode(tag="code", value=text)
+            return LeafNode(tag="code", value=text_node.text)
         case TextType.LINK:
-            anchor_text, url = from_link(text_node.text)
-            return LeafNode(tag="a", value=anchor_text, props={"href": url})
+            return LeafNode(
+                tag="a", value=text_node.text, props={"href": text_node.url}
+            )
         case TextType.IMAGE:
-            alt_text, src = from_image(text_node.text)
-            return LeafNode(tag="img", value="", props={"alt": alt_text, "src": src})
+            return LeafNode(
+                tag="img", value="", props={"alt": text_node.text, "src": text_node.url}
+            )
         case _:
             raise ValueError("Unknown TextType.")
