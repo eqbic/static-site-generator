@@ -47,8 +47,15 @@ def extract_paragraph(block: str) -> str:
 
 
 def extract_quote(block: str) -> str:
-    match = re.fullmatch(r"(> ?)(.+)", block, re.MULTILINE)
-    return match.group(2)
+    lines = block.splitlines()
+    items = []
+    for line in lines:
+        match = re.match(r"(> ?)(.+)", line)
+        if match:
+            items.append(match.group(2))
+    result = " ".join(line for line in items)
+    print(result)
+    return result
 
 
 def extract_unordered_list(block: str) -> list[str]:

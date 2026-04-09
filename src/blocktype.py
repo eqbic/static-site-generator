@@ -11,7 +11,7 @@ def is_code(block: str) -> bool:
 
 
 def is_quote(block: str) -> bool:
-    return re.fullmatch(r"(> ?.+\n?)+", block, re.MULTILINE) is not None
+    return re.match(r"(>[.\n]?.+\n?)+", block) is not None
 
 
 def is_unordered_list(block: str) -> bool:

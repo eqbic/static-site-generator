@@ -58,9 +58,9 @@ class TestBlockType:
         assert BlockType.from_block(text) == BlockType.QUOTE
 
     def test_quote_multi_line(self):
-        text = """> quiote
-> another line
-> line"""
+        text = """> "I am in fact a Hobbit in all but size."
+        >
+        > -- J.R.R. Tolkien"""
         assert BlockType.from_block(text) == BlockType.QUOTE
 
     def test_unordered_list(self):
@@ -138,5 +138,7 @@ This is another paragraph with _italic_ text and `code` here
 
         node = markdown_to_html_node(md)
         html = node.to_html()
-        assert html == "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>"
-        
+        assert (
+            html
+            == "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>"
+        )
