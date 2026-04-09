@@ -18,7 +18,9 @@ HERE = Path(__file__).resolve()
 PROJECT_ROOT = find_project_root(HERE)
 
 STATIC_DIR = PROJECT_ROOT / "static"
-PUBLIC_DIR = PROJECT_ROOT / "public"
+PUBLIC_DIR = PROJECT_ROOT / "docs"
+if not PUBLIC_DIR.exists():
+    PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
 CONTENT_DIR = PROJECT_ROOT / "content"
 
 
@@ -66,6 +68,6 @@ def deploy_content(source: Path, destination: Path, base_path: str):
 
 
 if __name__ == "__main__":
-    base_path = sys.argv[0] if len(sys.argv) > 0 else "/"
+    base_path = sys.argv[1] if len(sys.argv) > 1 else "/"
     deploy_static(STATIC_DIR, PUBLIC_DIR)
     deploy_content(CONTENT_DIR, PUBLIC_DIR, base_path)
