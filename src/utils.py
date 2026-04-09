@@ -34,6 +34,14 @@ def extract_markdown_heading(header: str) -> tuple[int, str]:
     return (level, text)
 
 
+def extract_title(markdown: str) -> str:
+    match = re.match(r"(#{1} )(.+)", markdown.strip())
+    if match:
+        title = match.group(2)
+        return title
+    raise ValueError("No title found in markdown file.")
+
+
 def extract_paragraph(block: str) -> str:
     return " ".join(line.strip() for line in block.splitlines())
 
@@ -57,7 +65,7 @@ def extract_ordered_list(block: str) -> list[str]:
     lines = block.splitlines()
     items = []
     for line in lines:
-        match = re.match(r"(\d. )(.+)")
+        match = re.match(r"(\d. )(.+)", line)
         if match:
             items.append(match.group(2))
     return items
@@ -179,7 +187,6 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
                 block_elements.append(h_node)
             case BlockType.CODE:
                 code = extract_code(block)
-                print(code)
                 text_nodes = [TextNode(code, TextType.TEXT)]
                 leafs = [text_node_to_html_node(node) for node in text_nodes]
                 code_node = ParentNode("code", leafs)

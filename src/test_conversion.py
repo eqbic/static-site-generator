@@ -2,6 +2,7 @@ from textnode import TextNode, TextType
 from utils import (
     extract_markdown_images,
     extract_markdown_links,
+    extract_title,
     markdown_to_blocks,
     split_nodes_delimiter,
     split_nodes_image,
@@ -215,3 +216,10 @@ This is the same paragraph on a new line
             "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
             "- This is a list\n- with items",
         ]
+
+    def test_extract_title(self):
+        md = """
+# This is my tile
+
+## This is not an title"""
+        assert extract_title(md) == "This is my tile"
