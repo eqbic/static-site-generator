@@ -1,5 +1,7 @@
+import os
 import shutil
 from pathlib import Path
+from re import T
 
 from utils import extract_title, markdown_to_html_node
 
@@ -30,18 +32,32 @@ def generate_page(from_path: Path, template_path: Path, dest_path: Path):
     title = extract_title(md)
     template = template.replace("{{ Title }}", title)
     template = template.replace("{{ Content }}", html)
-    dest_file = dest_path / "index.html"
+    rel_path = from_path.relative_to(CONTENT_DIR)
+    dest_file = dest_path / rel_path.parent / f"{rel_path.stem}.html"
     if dest_file.exists():
         dest_file.unlink()
+    dest_file.parent.mkdir(parents=True, exist_ok=True)
     with open(dest_file, "w") as f:
         f.write(template)
 
 
-def deploy(source: Path, destination: Path):
+def generate_pages_recursive(
+    content_path: Path, template_path: Path, dest_dir_path: Path
+):
+    for root, dirs, files in os.walk(content_path):
+        for file in files:
+            generate_page(Path(root) / file, template_path, dest_dir_path)
+
+
+def deploy_static(source: Path, destination: Path):
     shutil.rmtree(destination)
     shutil.copytree(source, destination)
-    generate_page(CONTENT_DIR / "index.md", PROJECT_ROOT / "template.html", destination)
+
+
+def deploy_content(source: Path, destination: Path):
+    generate_pages_recursive(source, PROJECT_ROOT / "template.html", destination)
 
 
 if __name__ == "__main__":
-    deploy(STATIC_DIR, PUBLIC_DIR)
+    deploy_static(STATIC_DIR, PUBLIC_DIR)
+    deploy_content(CONTENT_DIR, PUBLIC_DIR)

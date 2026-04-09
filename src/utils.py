@@ -39,7 +39,7 @@ def extract_title(markdown: str) -> str:
     if match:
         title = match.group(2)
         return title
-    raise ValueError("No title found in markdown file.")
+    raise ValueError(f"No title found in markdown file: {markdown}.")
 
 
 def extract_paragraph(block: str) -> str:
@@ -54,7 +54,6 @@ def extract_quote(block: str) -> str:
         if match:
             items.append(match.group(2))
     result = " ".join(line for line in items)
-    print(result)
     return result
 
 
